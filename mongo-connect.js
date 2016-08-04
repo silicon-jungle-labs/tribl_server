@@ -25,6 +25,18 @@ module.exports = () => {
       })
       .catch(reject); 
     }), 
+    update: ({ collectionName, doc, query, upsert }) => new Promise((resolve, reject) => {
+      connectAndExecute()
+      .then(db => {
+        db.collection(collectionName).update(query, doc, { upsert })
+        .then(() => {
+          resolve(true);
+          db.close();
+        })
+        .catch(reject);
+      })
+      .catch(reject); 
+    }), 
     findOne: ({ collectionName, doc }) => new Promise((resolve, reject) => {
       connectAndExecute()
       .then(db => {

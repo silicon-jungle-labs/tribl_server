@@ -40,19 +40,21 @@ app.post('/saveUserAppState/:userId', (req, res) => {
   if (!userId) res.send({ error: 'invalidId' });
 
   const { body: userAppState } = req;
+  if (!userAppState || !userAppState.facebook) res.send({ error: 'invalid userAppState' });
+  if (userId !== userAppState.facebook.credentials.userId) res.send({ error: 'access denied' });
 
-  mongoClient.insert({ 
+  mongoClient.update({ 
+    query: { _id: userAppState.facebook.credentials.userId },
     collectionName: 'userAppStatesCollection',
     doc: {
-      _id: userAppState.facebook.credentials.userId,
       userAppState,
-    }
+    },
+    upsert: true,
   })
   .then(userAppState => {
     res.send({ success: 'success' })
   })
   .catch(err => {
-    console.log(`err in hydrateUser ${err}`);
     res.send({error: err });
   });
 });
