@@ -37,15 +37,32 @@ module.exports = () => {
       })
       .catch(reject); 
     }), 
-    findOne: ({ collectionName, doc }) => new Promise((resolve, reject) => {
+    findOne: ({ collectionName, query }) => new Promise((resolve, reject) => {
       connectAndExecute()
       .then(db => {
-        db.collection(collectionName).findOne(doc)
+        db.collection(collectionName).findOne(query)
         .then(foundDoc => {
           resolve(foundDoc);
           db.close();
         })
         .catch(reject);
+      })
+      .catch(reject); 
+    }), 
+    find: ({ collectionName, query, returnCursor }) => new Promise((resolve, reject) => {
+      connectAndExecute()
+      .then(db => {
+        if (returnCursor) {
+          resolve(db.collection(collectionName).find(query))
+          db.close();
+        } else {
+          db.collection(collectionName).find(query)
+          .then(foundDoc => {
+            resolve(foundDoc);
+            db.close();
+          })
+          .catch(reject);
+        }
       })
       .catch(reject); 
     }), 
