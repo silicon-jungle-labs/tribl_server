@@ -4,8 +4,9 @@ const server = require('http').createServer()
   , wss = new WebSocketServer({ server })
   , express = require('express')
   , app = express()
-  , port = 3030;
+  , port = (process.env.NODE_ENV !== 'production') ? 3030 : process.env.PORT;
 
+console.log(`Port is: ${port} and env is ${process.env.NODE_ENV}`);
 const config = require('./config')(process.env.NODE_ENV || 'development');
 const mongoClient = require('./mongo-connect')();
 const bodyParser = require('body-parser');
