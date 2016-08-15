@@ -4,6 +4,7 @@ const server = require('http').createServer()
   , wss = new WebSocketServer({ server })
   , express = require('express')
   , app = express()
+  , util = require('util')
   , port = (process.env.NODE_ENV !== 'production') ? 3030 : process.env.PORT;
 
 console.log(`Port is: ${port} and env is ${process.env.NODE_ENV}`);
@@ -27,14 +28,22 @@ app.post('/getMatchesFor/:userId', (req, res) => {
   if (userId !== userAppState.facebook.credentials.userId) res.send({ error: 'access denied' });
 
   const {
-    gender,
+    gender: genderCriteria,
     minAge,
     maxAge,
     located,
-  } = userAppState.userInfo.lookinFor;
+  } = userAppState.userInfo.lookingFor;
 
-  const query = {};
-  query.userInfo.bio.gender = gender;
+  const query = {
+    userInfo: {
+      bio: {
+        gender: null,
+      },
+      birthday: null,
+    }
+  };
+
+  query.userInfo.bio.gender = genderCriteria;
   query.userInfo.bio.location = located;
   query.userInfo.birthday = {
     $gte: moment().subtract(minAge, 'years').toISOString(),
@@ -46,10 +55,10 @@ app.post('/getMatchesFor/:userId', (req, res) => {
     returnCursor: true,
     collectionName: 'userAppStatesCollection',
   })
-  .then(cursor => res.send(cursor)) 
+  .then(documents => res.json({ docs: documents })) 
   .catch(err => {
     console.log(`err in hydrateUser ${err}`);
-    res.send({error: err });
+    res.json({error: err });
   });
 });
 

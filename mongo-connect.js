@@ -52,17 +52,15 @@ module.exports = () => {
     find: ({ collectionName, query, returnCursor }) => new Promise((resolve, reject) => {
       connectAndExecute()
       .then(db => {
-        if (returnCursor) {
-          resolve(db.collection(collectionName).find(query))
-          db.close();
-        } else {
-          db.collection(collectionName).find(query)
-          .then(foundDoc => {
-            resolve(foundDoc);
-            db.close();
-          })
-          .catch(reject);
-        }
+        const cursor = db.collection(collectionName).find(query);
+        cursor.toArray((err, docs) => {
+          if (err) {
+            reject(err);
+          } else {
+            resolve(docs);
+          }
+        });
+        db.close();
       })
       .catch(reject); 
     }), 
