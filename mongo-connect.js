@@ -49,10 +49,10 @@ module.exports = () => {
       })
       .catch(reject); 
     }), 
-    find: ({ collectionName, query, returnCursor }) => new Promise((resolve, reject) => {
+    find: ({ collectionName, query, returnCursor, projection = {} }) => new Promise((resolve, reject) => {
       connectAndExecute()
       .then(db => {
-        const cursor = db.collection(collectionName).find(query);
+        const cursor = db.collection(collectionName).find(query, projection);
         cursor.toArray((err, docs) => {
           if (err) {
             reject(err);
