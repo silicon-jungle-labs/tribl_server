@@ -5,6 +5,7 @@ const server = require('http').createServer()
   , express = require('express')
   , app = express()
   , util = require('util')
+  , RelationshipsManager = require('./relationships-manager')
   , port = (process.env.NODE_ENV !== 'production') ? 3030 : process.env.PORT;
 
 console.log(`Port is: ${port} and env is ${process.env.NODE_ENV}`);
@@ -20,6 +21,7 @@ app.get('/', (req, res) => {
   res.send({ msg: "hello" });
 });
 
+// Get matches for a specific user
 app.post('/getMatchesFor/:userId', (req, res) => {
   const { userId } = req.params;
   if (!userId) res.send({ error: 'invalidId' });
@@ -28,38 +30,40 @@ app.post('/getMatchesFor/:userId', (req, res) => {
   if (!userAppState || !userAppState.facebook) res.send({ error: 'invalid userAppState' });
   if (userId !== userAppState.facebook.credentials.userId) res.send({ error: 'access denied' });
 
-  const {
-    gender: genderCriteria,
-    minAge,
-    maxAge,
-    located,
-  } = userAppState.userInfo.lookingFor;
-
-  const query = {
-    userInfo: {
-      bio: {
-        gender: null,
-      },
-      birthday: null,
-    }
-  };
-
-  query.userInfo.bio.gender = genderCriteria;
-  query.userInfo.bio.location = located;
-  query.userInfo.birthday = {
-    $gte: moment().subtract(minAge, 'years').toISOString(),
-    $lte: moment().subtract(maxAge, 'years').toISOString(),
-  };
-
-  mongoClient.find({ 
-    query,
-    returnCursor: true,
-    collectionName: 'userAppStatesCollection',
-  })
+  RelationshipsManager.getMatchesForUserX({ userX: userId })
   .then(documents => res.json({ docs: documents })) 
   .catch(err => {
     console.log(`err in hydrateUser ${err}`);
     res.json({error: err });
+  });
+});
+
+app.get('/getUserDetails/:userId', (req, res) => {
+  const { userId } = req.params;
+  if (!userId) {
+    res.send({ error: 'invalidId' });
+    return false;
+  }
+
+  mongoClient.findOne({ 
+    collectionName: 'userAppStatesCollection',
+    query: {
+      _id: userId,
+    },
+    options: {
+      fields: {
+        _id: 0,
+        'userAppState.userInfo': 1,
+        'userAppState.profilePictures.chosenPhotos': 1,
+      }
+    }
+  })
+  .then(userDetails => {
+    res.json(userDetails)
+  })
+  .catch(err => {
+    console.log(`err in hydrateUser ${err}`);
+    res.send({error: err });
   });
 });
 
@@ -80,6 +84,18 @@ app.get('/hydrateUserAppState/:userId', (req, res) => {
     console.log(`err in hydrateUser ${err}`);
     res.send({error: err });
   });
+});
+
+app.get('/userxWantsToMatchUserY/:userX/:userY', (req, res) => {
+  const { userX, userY } = req.params;
+  if (!userX && ! userY) {
+    res.json({ err: 'invalid parameters' });
+    return false;
+  }
+
+  RelationshipsManager.userXWantsToMatchUserY({ userX, userY })
+  .then(res => res.json({ success: 'success' }))
+  .catch(err => res.json({ error: err }))
 });
 
 app.post('/saveUserAppState/:userId', (req, res) => {

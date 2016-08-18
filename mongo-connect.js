@@ -37,10 +37,10 @@ module.exports = () => {
       })
       .catch(reject); 
     }), 
-    findOne: ({ collectionName, query }) => new Promise((resolve, reject) => {
+    findOne: ({ collectionName, query, options = {} }) => new Promise((resolve, reject) => {
       connectAndExecute()
       .then(db => {
-        db.collection(collectionName).findOne(query)
+        db.collection(collectionName).findOne(query, options)
         .then(foundDoc => {
           resolve(foundDoc);
           db.close();
@@ -49,10 +49,10 @@ module.exports = () => {
       })
       .catch(reject); 
     }), 
-    find: ({ collectionName, query, returnCursor, projection = {} }) => new Promise((resolve, reject) => {
+    find: ({ collectionName, query, returnCursor, options = {} }) => new Promise((resolve, reject) => {
       connectAndExecute()
       .then(db => {
-        const cursor = db.collection(collectionName).find(query, projection);
+        const cursor = db.collection(collectionName).find(query, options);
         cursor.toArray((err, docs) => {
           if (err) {
             reject(err);

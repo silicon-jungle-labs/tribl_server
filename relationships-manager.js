@@ -2,7 +2,7 @@ const mongoClient = require('./mongo-connect')();
 const _  = require('lodash');
 
 
-const RelationshipsManager = () => {
+const RelationshipsManager = function RelationshipsManager() {
   const collectionName = 'relationshipsCollection';
   const newUserAction = 'added';
   const wantsToMatchAction = 'wantsToMatch';
@@ -26,9 +26,9 @@ const RelationshipsManager = () => {
     doc.relationshipId = `${userX}${action}${userX}`;
 
     mongoClient.update({
-      collectionName
+      collectionName,
       doc,
-      query: {}
+      query: {},
       upsert: true,
     })
     .then(() => resolve(true))
@@ -36,7 +36,7 @@ const RelationshipsManager = () => {
   });
 
   // Handler for when userX wants to match userY
-  this.userWantsToMatch = ({ userX, userY }) => new Promise((resolve, reject) => {
+  this.userXWantsToMatchUserY = ({ userX, userY }) => new Promise((resolve, reject) => {
     if (!userY && !userX) {
       reject('You must pass a value for userX and userY');
       return false;
@@ -109,7 +109,7 @@ const RelationshipsManager = () => {
         // For all potentialMatches check if userX wants to match too
         return this.doesUserXLikeUserY({ userX, userY: potentialMatch.userX });
       });
-    });
+    })
     .then(matchesTested => _.filter(matchesTested, match => match.status))
     .then(matches => {
       // return userY ids
