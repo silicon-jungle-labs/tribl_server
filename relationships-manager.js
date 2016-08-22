@@ -104,7 +104,7 @@ const RelationshipsManager = function RelationshipsManager() {
     mongoClient.find({
       collectionName,
       query: {
-        $not {
+        $not: {
           userX,
           action: wantsToMatchAction,
         },
