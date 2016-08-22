@@ -100,6 +100,23 @@ const RelationshipsManager = function RelationshipsManager() {
     .catch(err => reject(err));
   });
 
+  this.getPotentialMatchesForUserX = ({ userX }) => new Promise((resolve, reject) => {
+    mongoClient.find({
+      collectionName,
+      query: {
+        $not {
+          userX,
+          action: wantsToMatchAction,
+        },
+      },
+    })
+    .then(docs => {
+      userIds = _.map(docs, doc => doc.userY);
+      resolve(userIds);
+    })
+    .catch(err => reject(err))
+  });
+
   this.getMatchesForUserX = ({ userX }) => new Promise((resolve, reject) => {
     // For userX get all userY's that wantsToMatch with userX
     // Note: userX then becomes the userY for all relationships we're looking for
@@ -116,6 +133,7 @@ const RelationshipsManager = function RelationshipsManager() {
       const userYIds = _.map(matches, match => {
         return match.userY
       });
+      console.log(`userIds are: ${userYIds}`);
       resolve(userYIds);
     })
     .catch(err => reject(err))

@@ -38,6 +38,17 @@ app.post('/getMatchesFor/:userId', (req, res) => {
   });
 });
 
+app.get('/getPotentialMatchesForUserX/:userX', (req, res) => {
+  const { userX } = req.params;
+  if (!userX) res.send({ error: 'invalidId' });
+  RelationshipsManager.getPotentialMatchesForUserX({ userX })
+  .then(documents => res.json({ docs: documents })) 
+  .catch(err => {
+    console.log(`err in getPotentialMatchesForUserX ${err}`);
+    res.json({error: err });
+  });
+});
+
 app.get('/getUserDetails/:userId', (req, res) => {
   const { userId } = req.params;
   if (!userId) {
