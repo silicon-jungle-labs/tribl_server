@@ -104,11 +104,13 @@ const RelationshipsManager = function RelationshipsManager() {
     mongoClient.find({
       collectionName,
       query: {
-        $not: {
-          userX,
-          action: wantsToMatchAction,
+        userX: {
+          $ne: userX,
         },
-      },
+        action: {
+          $ne: wantsToMatchAction,
+        },
+      }
     })
     .then(docs => {
       userIds = _.map(docs, doc => doc.userY);
