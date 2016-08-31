@@ -78,7 +78,7 @@ app.get('/getUserDetails/:userId', (req, res) => {
   });
 });
 
-app.get('/hydrateUserAppState/:userId', (req, res) => {
+app.get('/hydrateUserAppState/:userId/', (req, res) => {
   const { userId } = req.params;
   if (!userId) res.send({ error: 'invalidId' });
 
@@ -109,14 +109,20 @@ app.get('/userxWantsToMatchUserY/:userX/:userY', (req, res) => {
   .catch(err => res.json({ error: err }))
 });
 
-app.post('/saveUserAppState/:userId', (req, res) => {
-  const { userId } = req.params;
+app.post('/saveUserAppState/:userId/:firstTime?', (req, res) => {
+  const { userId, firstTime } = req.params;
   if (!userId) res.send({ error: 'invalidId' });
 
   const { body: userAppState } = req;
   if (!userAppState || !userAppState.facebook) res.send({ error: 'invalid userAppState' });
   if (userId !== userAppState.facebook.credentials.userId) res.send({ error: 'access denied' });
 
+  if (firstTime === 'true') {
+    console.log('first time true');
+    RelationshipsManager.addNewUser({
+      userY: userId
+    })
+  }
   mongoClient.update({ 
     query: { _id: userAppState.facebook.credentials.userId },
     collectionName: 'userAppStatesCollection',

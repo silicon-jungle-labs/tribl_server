@@ -25,6 +25,18 @@ module.exports = () => {
       })
       .catch(reject); 
     }), 
+    remove: ({ collectionName, query }) => new Promise((resolve, reject) => {
+      connectAndExecute()
+      .then(db => {
+        db.collection(collectionName).remove(query)
+        .then(() => {
+          resolve(true);
+          db.close();
+        })
+        .catch(reject);
+      })
+      .catch(reject); 
+    }), 
     update: ({ collectionName, doc, query, upsert }) => new Promise((resolve, reject) => {
       connectAndExecute()
       .then(db => {

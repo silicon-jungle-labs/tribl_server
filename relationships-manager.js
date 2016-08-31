@@ -23,7 +23,7 @@ const RelationshipsManager = function RelationshipsManager() {
       userY
     };
 
-    doc.relationshipId = `${userX}${action}${userX}`;
+    doc.relationshipId = `${userX}${action}${userY}`;
 
     mongoClient.update({
       collectionName,
@@ -50,9 +50,29 @@ const RelationshipsManager = function RelationshipsManager() {
       userY,
     };
 
-    doc.relationshipId = `${userX}${action}${userX}`;
+    doc.relationshipId = `${userX}${action}${userY}`;
 
     mongoClient.update({
+      collectionName,
+      doc,
+      query: {
+        relationshipId: doc.relationshipId,
+      },
+      upsert: true,
+    })
+    .then(() => resolve(true))
+    .catch(err => reject(err))
+  });
+
+  this.userXWantsToUnmatchUserY = ({ userX, userY }) => new Promise((resolve, reject) => {
+    if (!userY && !userX) {
+      reject('You must pass a value for userX and userY');
+      return false;
+    }
+
+    doc.relationshipId = `${userX}${action}${userY}`;
+
+    mongoClient.remove({
       collectionName,
       doc,
       query: {
