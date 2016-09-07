@@ -66,6 +66,7 @@ app.get('/getUserDetails/:userId', (req, res) => {
         _id: 0,
         'userAppState.userInfo': 1,
         'userAppState.profilePictures.chosenPhotos': 1,
+        'userAppState.facebook.credentials.userId': 1,
       }
     }
   })
