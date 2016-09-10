@@ -28,7 +28,9 @@ const RelationshipsManager = function RelationshipsManager() {
     mongoClient.update({
       collectionName,
       doc,
-      query: {},
+      query: {
+        relationshipId: doc.relationshipId
+      },
       upsert: true,
     })
     .then(() => resolve(true))

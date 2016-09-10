@@ -1,4 +1,4 @@
-const MongoClient = require('mongodb').MongoClient;
+const { MongoClient, Code } = require('mongodb');
 const config = require('./config')(process.env.NODE_ENV || 'development');
 
 const connectAndExecute = () => new Promise((resolve, reject) => {
@@ -13,6 +13,7 @@ const connectAndExecute = () => new Promise((resolve, reject) => {
 
 module.exports = () => {
   return {
+    getCode: Code,
     insert: ({ collectionName, doc }) => new Promise((resolve, reject) => {
       connectAndExecute()
       .then(db => {

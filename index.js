@@ -14,6 +14,7 @@ const config = require('./config')(process.env.NODE_ENV || 'development');
 const mongoClient = require('./mongo-connect')();
 const bodyParser = require('body-parser');
 const moment = require('moment');
+const Messager = require('./messager');
 
 app.use(bodyParser.json()); // for parsing application/json
 
@@ -107,7 +108,7 @@ app.get('/userxWantsToMatchUserY/:userX/:userY', (req, res) => {
   }
 
   RelationshipsManager.userXWantsToMatchUserY({ userX, userY })
-  .then(res => res.json({ success: 'success' }))
+  .then(() => res.json({ success: 'success' }))
   .catch(err => res.json({ error: err }))
 });
 
@@ -136,6 +137,52 @@ app.post('/saveUserAppState/:userId/:firstTime?', (req, res) => {
   .then(userAppState => {
     res.send({ success: 'success' })
   })
+  .catch(err => {
+    res.send({error: err });
+  });
+});
+
+app.post('/newMessage/:from/:to/:text', (req, res) => {
+  const { from, to, text } = req.params;
+  // const { body: text } = req;
+  if (!from && !to && !text) {
+    res.send({ error: 'invalid parameters' });
+    return false;
+  }
+
+  Messager.getConversation({ user1Id: from, user2Id: to })
+  .then(conversation => {
+    if (!conversation) {
+      Messager.newConversation({ user1Id: from, user2Id: to })
+      .then(newConversation => {
+        return Messager.newMessage({ from, to, text, conversationId: newConversation.conversationId })
+      })
+      .then(newConversation => {
+        res.json({ conversation: newConversation })
+      })
+    } else {
+      const { conversationId } = conversation;
+      Messager.newMessage({ from, to, text, conversationId })
+      .then(newConversation => {
+        res.json({ conversation: newConversation })
+      })
+    }
+  })
+  .catch(err => {
+    console.log(err);
+    res.send({error: err });
+  });
+});
+
+app.get('/getConversationsForUser/:userId', (req, res) => {
+  const { userId } = req.params;
+  if (!userId) {
+    res.send({ error: 'invalidId' });
+    return false;
+  }
+
+  Messager.getConversationsForUser({ userId })
+  .then(conversations => res.json({ conversations }))
   .catch(err => {
     res.send({error: err });
   });
