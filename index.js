@@ -188,6 +188,19 @@ app.get('/getConversationsForUser/:userId', (req, res) => {
   });
 });
 
+app.get('/getConversationBetween/:user1Id/:user2Id', (req, res) => {
+  const { user1Id, user2Id } = req.params;
+  if (!user1Id && !user2Id) {
+    res.send({ error: 'invalidId' });
+    return false;
+  }
+  Messager.getConversation({ user1Id, user2Id })
+  .then(conversation => res.json({ conversation }))
+  .catch(err => {
+    res.send({error: err });
+  });
+});
+
 const hydrateUser = ({ userId, ws }) => {
   mongoClient.findOne({ 
     collectionName: 'userAppStatesCollection',

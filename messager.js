@@ -8,10 +8,21 @@ class Conversation {
     this.conversationId = this._getID({ user1Id, user2Id });
     this.messages = [];
     this.members = [ user1Id, user2Id ];
+    this.iceBreakQuestion = this._getRandomIceBreaker();
   }
 
   isUserAMember({ userId }) {
     return _.indexOf(this.members, userId) !== -1;
+  }
+
+  _getRandomIceBreaker() {
+    const iceBreakerQuestions = [
+      `Who's got the title this year, Warriors or Spurs`,
+      `Single or nah?`,
+      `What did you want to be when you were a kid?`,
+      `What conspiracy theory makes the most sense to you?`,
+    ];
+    return _.sample(iceBreakerQuestions);
   }
 
   _getID({ user1Id, user2Id }) {
