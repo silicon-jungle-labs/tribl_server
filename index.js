@@ -169,7 +169,7 @@ app.get('/newMessage/:from/:to/:text', (req, res) => {
       .then(newConversation => {
         res.json({ conversation: newConversation })
         clientSocketConnection.send(
-          JSON.stringify({type: newConversation.conversationId, conversation })
+          JSON.stringify({type: newConversation.conversationId, conversation: newConversation })
         );
       })
     } else {
@@ -178,7 +178,7 @@ app.get('/newMessage/:from/:to/:text', (req, res) => {
       .then(newConversation => {
         res.json({ conversation: newConversation })
         clientSocketConnection.send(
-          JSON.stringify({type: newConversation.conversationId, conversation })
+          JSON.stringify({type: newConversation.conversationId, conversation: newConversation })
         );
       })
     }
