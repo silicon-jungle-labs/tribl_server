@@ -142,7 +142,7 @@ app.post('/saveUserAppState/:userId/:firstTime?', (req, res) => {
   });
 });
 
-app.post('/newMessage/:from/:to/:text', (req, res) => {
+app.get('/newMessage/:from/:to/:text', (req, res) => {
   const { from, to, text } = req.params;
   // const { body: text } = req;
   if (!from && !to && !text) {
