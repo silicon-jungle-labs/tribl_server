@@ -97,13 +97,29 @@ const RelationshipsManager = function RelationshipsManager() {
     .catch(err => reject(err))
   }); 
 
+  this.isMutualMatch = ({ userX, userY }) => new Promise((resolve, reject) => {
+    let userXLikesY = false;
+    let userYLikesX = false;
+    this.doesUserXLikeUserY({ userX, userY })
+    .then(({ status }) => {
+      userXLikesY = status;
+      return this.doesUserXLikeUserY({ userX: userY, userY: userX })
+    })
+    .then(({ status }) => {
+      userYLikesX = status;
+      return null 
+    })
+    .then(() => resolve( userXLikesY && userYLikesX ))
+    .catch(err => reject(err))
+  });
+
   this.doesUserXLikeUserY = ({ userX, userY }) => new Promise((resolve, reject) => {
     // We check if userX wants to match userY if we can find a doc with id:
     // userX+wantsToMatchAction+userY
     mongoClient.findOne({
       collectionName,
       query: {
-        relationshipId: `${userX}${userWantsToMatch}${userY}`,
+        relationshipId: `${userX}${wantsToMatchAction}${userY}`,
       }
     })
     .then(doc => resolve({ userX, userY, status: !!doc }))

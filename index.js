@@ -108,8 +108,17 @@ app.get('/userxWantsToMatchUserY/:userX/:userY', (req, res) => {
   }
 
   RelationshipsManager.userXWantsToMatchUserY({ userX, userY })
-  .then(() => res.json({ success: 'success' }))
-  .catch(err => res.json({ error: err }))
+  .then(() => RelationshipsManager.isMutualMatch({ userX, userY }))
+  .then(isMutualMatch => {
+    // if it's a mutual match, go ahead and create a new Conversation
+    if (isMutualMatch) Messager.newConversation({ user1Id: userX, user2Id: userY });
+    return isMutualMatch;
+  })
+  .then(isMutualMatch => res.json({ isMutualMatch }))
+  .catch(err => {
+    console.log(err);
+    res.json({ error: err })
+  })
 });
 
 app.post('/saveUserAppState/:userId/:firstTime?', (req, res) => {
@@ -159,12 +168,18 @@ app.get('/newMessage/:from/:to/:text', (req, res) => {
       })
       .then(newConversation => {
         res.json({ conversation: newConversation })
+        clientSocketConnection.send(
+          JSON.stringify({type: newConversation.conversationId, conversation })
+        );
       })
     } else {
       const { conversationId } = conversation;
       Messager.newMessage({ from, to, text, conversationId })
       .then(newConversation => {
         res.json({ conversation: newConversation })
+        clientSocketConnection.send(
+          JSON.stringify({type: newConversation.conversationId, conversation })
+        );
       })
     }
   })
@@ -235,6 +250,7 @@ const newUser = ({ userId, ws, userAppState }) => {
 };
 
 wss.on('connection', ws => {
+  clientSocketConnection = ws;
   ws.on('message', message => {
     const payload = JSON.parse(message.data);
     const { userId } = payload;
