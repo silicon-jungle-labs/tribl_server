@@ -6,7 +6,7 @@ module.exports = environment => {
       mongoUrl: 'mongodb://localhost:27017/tribl',
     },
     production: {
-      mongoUrl: 'mongodb://tribl:triblAdmin@jello.modulusmongo.net:27017/oneNi4my',
+      mongoUrl: 'mongodb://tribl:triblAdmin@jello.modulusmongo.net:27017/te9Tedum',
     }
   };
   return options[environment];

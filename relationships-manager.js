@@ -139,6 +139,7 @@ const RelationshipsManager = function RelationshipsManager() {
   });
 
   this.getPotentialMatchesForUserX = ({ userX }) => new Promise((resolve, reject) => {
+    // get users that havent indicated if they want to match with us
     mongoClient.find({
       collectionName,
       query: {
