@@ -31,7 +31,7 @@ jobs:
         run: | 
          npm install
          npm run build --if-present 
-         npm test --if-present
+         
   # This workflow contains a single job called "build"
   deploy:
     # The type of runner that the job will run on
