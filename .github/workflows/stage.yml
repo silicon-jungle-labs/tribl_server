@@ -1,0 +1,73 @@
+# This is a basic workflow to help you get started with Action
+name: Elastic Beanstalk Deployment
+
+on:
+  push:
+    branches:
+    - staging
+
+jobs:
+  my-ci-pipeline:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+      - name: use Node
+        uses: actions/setup-node@v1
+        with:
+          node-version: 12
+    
+      - name: Get npm cache directory
+        id: npm-cache
+        run: |
+         echo "::set-output name=dir::$(npm config get cache)"
+      - uses: actions/cache@v2
+        with:
+         path: ${{ steps.npm-cache.outputs.dir }}
+         key: ${{ runner.os }}-node-${{ hashFiles('**/package-lock.json') }}
+         restore-keys: |
+          ${{ runner.os }}-node-
+          
+      - name: npm install, build, test
+        run: | 
+         npm install
+         npm run build --if-present 
+         npm test --if-present
+  # This workflow contains a single job called "build"
+  deploy:
+    # The type of runner that the job will run on
+    runs-on: ubuntu-latest
+    needs: my-ci-pipeline
+
+    # Steps represent a sequence of tasks that will be executed as part of the job
+    steps:
+      # Checks-out your repository under $GITHUB_WORKSPACE, so your job can access it
+      - uses: actions/checkout@v2
+      
+      - name: Configure AWS Credentials
+        uses: aws-actions/configure-aws-credentials@v1
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: us-east-1
+
+      # Runs a single command using the runners shell
+      - name: Create Zip Application
+        run: zip -r "Application-${{ github.sha }}.zip" ./  
+       
+      - name: Upload package to S3 bucket
+        run: aws s3 cp "Application-${{ github.sha }}.zip" s3://staging-devops/ 
+
+      # Runs a set of commands using the runners shell
+      - name: Create new ElasticBeanstalk Application Version
+        run: |
+          aws elasticbeanstalk create-application-version \
+          --application-name tribl-core \
+          --source-bundle S3Bucket="staging-devops",S3Key="Application-${{ github.sha }}.zip" \
+          --version-label "ver-${{ github.sha }}" \
+          --description "commit-sha-${{ github.sha }}"
+             
+      - name: Deploy our new Application Version
+        run : aws elasticbeanstalk update-environment --environment-name astaging --version-label "ver-${{ github.sha }}"
+           
+      - name: Message on completion of CD Pipeline
+        run : echo "CD Pipeline part finished successfully"  
