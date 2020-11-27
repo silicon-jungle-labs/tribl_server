@@ -4,7 +4,8 @@
   "description": "Node server for tribl app",
   "main": "index.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" "
+    "test": "echo \"Error: no test specified\" ",
+    "start": "node index.js"
   },
   "author": "codeNgamer",
   "license": "ISC",
